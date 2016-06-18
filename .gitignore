@@ -22,5 +22,6 @@ project/plugins/project/
 .DS_Store
 dump.rdb
 neologd-seed/*
+node_modules/
 !.gitkeep
 
