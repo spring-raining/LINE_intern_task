@@ -10,6 +10,7 @@ object Main {
   val supervisor = Supervisor(dataStore)
   val absolutePath = new File("").getAbsolutePath + "/"
   val dictPath = absolutePath + "../neologd-seed/mecab-user-dict-seed.csv"
+  val exportPath = absolutePath + "dump.tsv"
 
   def main(args: Array[String]) {
     println(s"Number of saving NEologd original form(s) is ${dataStore.countNEologdOriginalForm}")
@@ -17,18 +18,19 @@ object Main {
     println(s"Number of analyzed user(s) is ${dataStore.countAnalyzedUser}")
 
     while (true) {
-      print("Select command [init/crawl/supervise/exit] ")
+      print("Select command [init/crawl/supervise/export/exit] ")
       StdIn.readLine match {
         case "exit" => return
-        case "init" => storeDataSet(dictPath)
+        case "init" => storeDataSet(dataStore, dictPath)
         case "crawl" => crawler.run()
         case "supervise" => supervisor.run()
+        case "export" => exportWords(dataStore, exportPath)
         case _ =>
       }
     }
   }
 
-  def storeDataSet(dictPath: String) = {
+  def storeDataSet(dataStore: DataStore, dictPath: String) = {
     val reader = CSVReader.open(dictPath)
 
     var i = 0
@@ -42,5 +44,16 @@ object Main {
       }
     }
     println()
+  }
+
+  def exportWords(dataStore: DataStore, exportPath: String) = {
+    val writer = CSVWriter.open(exportPath, append = false)
+    dataStore.getWeightedWords.foreach(word => {
+      dataStore.getWordWeight(word).foreach(weight => {
+        writer.writeRow(List(word, weight))
+      })
+    })
+    writer.close()
+    println(s"done (export path: $exportPath)")
   }
 }
