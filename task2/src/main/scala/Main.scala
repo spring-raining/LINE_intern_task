@@ -1,3 +1,4 @@
+import java.io.File
 import scala.io._
 import com.github.tototoshi.csv._
 
@@ -5,9 +6,10 @@ object Main {
   val redisDomain = "localhost"
   val redisPort = 6379
   val dataStore = DataStore(redisDomain, redisPort)
-  val dictPath = "/Users/aki/project/LINE_intern_task/neologd-seed/mecab-user-dict-seed.20160613.csv"
   val crawler = Crawler(dataStore)
   val supervisor = Supervisor(dataStore)
+  val absolutePath = new File("").getAbsolutePath + "/"
+  val dictPath = absolutePath + "../neologd-seed/mecab-user-dict-seed.csv"
 
   def main(args: Array[String]) {
     println(s"Number of saving NEologd original form(s) is ${dataStore.countNEologdOriginalForm}")
