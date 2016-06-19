@@ -3,14 +3,23 @@
 const path = require('path');
 const views = require('co-views');
 const redis = require('promise-redis')();
+const Twitter = require('./twitter');
+const calculateScore = require('./calculateScore');
 
 const rootKey = 'line_intern_task';
+
 const render = views(path.join(__dirname, 'views'), {
   map: { html: 'jade' },
 });
+
 const client = redis.createClient(6379, 'localhost');
 // Change to main DB
 client.select(1);
+
+const twitter = new Twitter(
+  process.env.TWITTER_CONSUMER_KEY,
+  process.env.TWITTER_CONSUMER_SECRET
+);
 
 const api = {
   getSupervise: function *(next) {
@@ -60,7 +69,7 @@ const api = {
       if (!(word in userWordDict)) {
         userWordDict[word] = 0;
       }
-      userWordDict[word] = 1;
+      userWordDict[word] += 1;
     });
     for (let word in userWordDict) {
       const wordCount = userWordDict[word];
@@ -72,13 +81,41 @@ const api = {
         yield client.set(`${rootKey}:weighted_word:${word}:count`, wordCount);
       }
       else {
-        yield client.set(`${rootKey}:weighted_word:${word}:weight`, (score * wordCount + weight * count) / (wordCount + count));
+        const w = (score * wordCount + (+weight) * (+count)) / (wordCount + (+count));
+        yield client.set(`${rootKey}:weighted_word:${word}:weight`, w);
         yield client.incrby(`${rootKey}:weighted_word:${word}:count`, wordCount);
       }
       yield client.sadd(`${rootKey}:weighted_words`, word);
     }
     this.body = { error: false };
   },
+
+  postAnalyze: function *(next) {
+    const screenName = this.query.screenName;
+    if (!screenName || !new RegExp(/^[0-9A-Za-z_]{1,15}$/).test(screenName)) {
+      this.status = 400;
+      this.body = {
+        error: true,
+        errorMessage: 'Invalid screen name',
+      };
+      return yield next;
+    }
+
+    try {
+      const result = yield twitter.userTimeline(screenName);
+      const score = yield calculateScore(result, client, rootKey);
+      this.body = {
+        error: false,
+        score: score,
+      };
+    } catch (err) {
+      this.status = 500;
+      this.body = {
+        error: true,
+        errorMessage: 'Failed to analyze 🙇',
+      };
+    }
+  }
 };
 
 module.exports = {

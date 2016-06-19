@@ -16,6 +16,7 @@ object Main {
     println(s"Number of saving NEologd original form(s) is ${dataStore.countNEologdOriginalForm}")
     println(s"Number of analyzed word(s) is ${dataStore.countAnalyzedWord}")
     println(s"Number of analyzed user(s) is ${dataStore.countAnalyzedUser}")
+    println(s"Number of weighted word(s) is ${dataStore.countWeightedWord}")
 
     while (true) {
       print("Select command [init/crawl/supervise/export/exit] ")
@@ -47,11 +48,18 @@ object Main {
   }
 
   def exportWords(dataStore: DataStore, exportPath: String) = {
+    implicit object ExportFormat extends DefaultCSVFormat {
+      override val delimiter = '\t'
+    }
+
     val writer = CSVWriter.open(exportPath, append = false)
     dataStore.getWeightedWords.foreach(word => {
-      dataStore.getWordWeight(word).foreach(weight => {
-        writer.writeRow(List(word, weight))
-      })
+      (dataStore.getWordWeight(word), dataStore.getWordCount(word)) match {
+        case (Some(weight), Some(count)) => {
+          writer.writeRow(List(word, weight, count))
+        }
+        case _ =>
+      }
     })
     writer.close()
     println(s"done (export path: $exportPath)")

@@ -4,6 +4,7 @@ import 'babel-polyfill';
 import co from 'co';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import Mousetrap from 'mousetrap';
 import fetch from './fetch';
 
 class Supervise extends React.Component {
@@ -18,6 +19,12 @@ class Supervise extends React.Component {
   }
 
   componentDidMount(prevProps, prevState) {
+    Mousetrap.reset();
+    Mousetrap.bind('m', this._onMaleButtonClick.bind(this));
+    Mousetrap.bind('f', this._onFemaleButtonClick.bind(this));
+    Mousetrap.bind('s', this._onSkipButtonClick.bind(this));
+    Mousetrap.bind('enter', this._onSubmitButtonClick.bind(this));
+
     this.next.bind(this)();
   }
 
@@ -90,11 +97,10 @@ class Supervise extends React.Component {
   judge() {
     co(function *() {
       if (this.state.maleScore + this.state.femaleScore >= 1) {
-        const post = yield fetch('POST', '/api/supervise', {
+        yield fetch('POST', '/api/supervise', {
           userId: this.state.judgingUser.id,
           score: this.state.maleScore / (this.state.maleScore + this.state.femaleScore),
         });
-        console.log(post);
       }
       this.next.bind(this)();
     }.bind(this));

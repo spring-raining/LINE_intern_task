@@ -29,16 +29,15 @@ export default function (method, url, args = null, isJsonp = false) {
 
       xhr.onload = () => {
         if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(xhr.response);
+          resolve(JSON.parse(xhr.responseText));
         }
         else {
-          reject(xhr.statusText);
+          reject(JSON.parse(xhr.responseText));
         }
       };
       xhr.onerror = () => {
         reject(xhr.statusText);
       };
-      xhr.responseType = 'json';
       xhr.open(method, buildURI(url, args));
       xhr.send();
     }
