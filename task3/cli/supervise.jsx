@@ -121,6 +121,7 @@ class Supervise extends React.Component {
         <div className="twitter-oembed"
              dangerouslySetInnerHTML={{__html: this.state.oEmbedTweetHtml}}>
         </div>
+        <p>→ <a href="/">Top</a></p>
       </div>
     );
   }

@@ -78,6 +78,7 @@ class Index extends React.Component {
         <p className="analyzing-message">{this.state.nowAnalyzing? 'Now analyzing...' : null}</p>
         <p className="error-message">{this.state.errorMessage}</p>
         <div className="result">{result}</div>
+        <p>→ <a href="/supervise">Supervise</a></p>
       </div>
     );
   }
