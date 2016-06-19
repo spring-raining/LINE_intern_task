@@ -223,6 +223,11 @@ class DataStore(domain: String, port: Int) extends RedisClient {
     get(keyOfWordWeight(word)).map(_.toFloat)
   }
 
+  def getWordCount(word: String): Option[Long] = {
+    select(DataStoreIndex.main)
+    get(keyOfWordCount(word)).map(_.toLong)
+  }
+
   def countWeightedWord: Long = {
     select(DataStoreIndex.main)
     scard(keyOfWeightedWords).getOrElse(0L)

@@ -23,5 +23,6 @@ project/plugins/project/
 dump.rdb
 neologd-seed/*
 node_modules/
+/task3/dist/js/
 !.gitkeep
 
