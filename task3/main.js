@@ -13,6 +13,8 @@ app.use(logger());
 
 app.use(route.get('/', ctrl.index));
 app.use(route.get('/supervise', ctrl.supervise));
+app.use(route.get('/api/supervise', ctrl.api.getSupervise));
+app.use(route.post('/api/supervise', ctrl.api.postSupervise));
 
 // static files
 app.use(serve(path.join(__dirname, 'dist')));
